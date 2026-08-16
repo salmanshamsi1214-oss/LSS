@@ -4,31 +4,169 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leads School System — Zeenat Campus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+:root{
+  --orange-700:#c2410c;
+  --orange-600:#ea580c;
+  --orange-500:#f97316;
+  --orange-400:#fb923c;
+  --orange-100:#ffedd5;
+  --orange-50:#fff7ed;
+  --gold:#eab308;
+  --cream:#fffaf5;
+  --white:#ffffff;
+  --ink:#1c1917;
+  --slate:#78716c;
+  --slate-light:#a8a29e;
+  --line:#f0e4d8;
+  --success:#16a34a;
+  --success-bg:#f0fdf4;
+  --danger:#dc2626;
+  --danger-bg:#fef2f2;
+  --info:#0ea5e9;
+  --info-bg:#f0f9ff;
+  --warn:#eab308;
+  --warn-bg:#fefce8;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(28,25,23,.04), 0 8px 24px -8px rgba(234,88,12,.12);
+  --font-display:'Sora',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:var(--font-body);
+  background:var(--cream);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+::selection{background:var(--orange-200,#fed7aa);}
+button{font-family:inherit; cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:var(--orange-100); border-radius:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+/* ---------- Torch loading trail ---------- */
+#trail{position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg,var(--gold),var(--orange-600)); z-index:9999; transition:width .3s ease; box-shadow:0 0 8px var(--orange-500);}
+
+/* ---------- LOGIN ---------- */
+#loginScreen{min-height:100vh; display:flex; align-items:stretch;}
+.login-visual{flex:1.1; position:relative; overflow:hidden; background:linear-gradient(160deg,var(--orange-700) 0%, var(--orange-600) 45%, var(--orange-500) 100%); display:flex; flex-direction:column; justify-content:space-between; padding:48px; color:#fff;}
+.login-visual::before{content:''; position:absolute; inset:0; background:rgba(255,255,255,.04);}
+.login-visual>*{position:relative; z-index:1;}
+.login-brand{display:flex;align-items:center;gap:14px;font-family:var(--font-display);font-size:24px;font-weight:800;}
+.login-brand small{display:block;font-family:var(--font-body);font-size:12px;font-weight:600;opacity:.75;margin-top:2px;}
+.login-brand img{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:5px;}
+.login-copy{max-width:560px;}
+.login-copy h2{font-family:var(--font-display);font-size:42px;line-height:1.12;margin-bottom:16px;}
+.login-copy p{font-size:16px;line-height:1.7;opacity:.9;max-width:520px;}
+.login-foot{font-size:12px;opacity:.7;}
+.login-panel{width:min(520px,100%);display:flex;align-items:center;justify-content:center;padding:40px;background:#fff;}
+.login-card{width:100%;max-width:420px;}
+.login-card h1{font-family:var(--font-display);font-size:28px;margin-bottom:8px;}
+.login-card .sub{color:var(--slate);font-size:14px;margin-bottom:24px;}
+.role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+.role-btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px 8px;text-align:center;color:var(--slate);transition:.18s;}
+.role-btn:hover,.role-btn.active{border-color:var(--orange-500);background:var(--orange-50);color:var(--orange-700);box-shadow:0 0 0 3px rgba(249,115,22,.08);}
+.role-btn .ico{font-size:24px;display:block;margin-bottom:5px;}
+.role-btn .lbl{font-size:11px;font-weight:700;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:var(--slate);}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;background:#fff;color:var(--ink);}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange-500);box-shadow:0 0 0 3px rgba(249,115,22,.08);}
+.login-btn{width:100%;border:0;border-radius:10px;padding:12px;background:var(--orange-600);color:#fff;font-weight:800;font-size:14px;box-shadow:0 6px 18px rgba(234,88,12,.2);}
+.login-btn:hover{background:var(--orange-700);}
+.demo-note{margin-top:14px;padding:10px 12px;background:var(--orange-50);border:1px solid var(--orange-100);border-radius:10px;font-size:11px;color:var(--slate);line-height:1.6;}
+
+/* ---------- APP SHELL ---------- */
+#app{display:none;min-height:100vh;}
+.sidebar{width:250px;background:#fff;border-right:1px solid var(--line);position:fixed;top:0;bottom:0;left:0;display:flex;flex-direction:column;z-index:50;}
+.sidebar-brand{padding:18px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+.sidebar-brand img{width:42px;height:42px;object-fit:contain;border-radius:9px;}
+.sidebar-brand .name{font-family:var(--font-display);font-weight:800;font-size:14px;line-height:1.15;}
+.sidebar-brand .name small{display:block;font-family:var(--font-body);font-weight:600;color:var(--slate);font-size:9px;margin-top:3px;}
+#navContainer{flex:1;overflow-y:auto;padding:12px 10px;}
+.nav-sec{margin:13px 8px 6px;font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--slate-light);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;margin:2px 0;color:var(--slate);font-size:12px;font-weight:600;cursor:pointer;transition:.15s;}
+.nav-item:hover{background:var(--orange-50);color:var(--orange-700);}
+.nav-item.active{background:var(--orange-100);color:var(--orange-700);font-weight:800;}
+.nav-item .ni{width:20px;text-align:center;font-size:15px;}
+.bottom-user{border-top:1px solid var(--line);padding:12px;display:flex;align-items:center;gap:9px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--orange-100);color:var(--orange-700);display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.bottom-user .who{min-width:0;flex:1;}.bottom-user .who .n{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.bottom-user .who .r{font-size:9px;color:var(--slate);margin-top:2px;}
+.logout-btn{border:0;background:none;color:var(--slate-light);font-size:17px;padding:4px;}.logout-btn:hover{color:var(--danger);}
+.main{margin-left:250px;min-height:100vh;}
+.topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:40;}
+.topbar h1{font-family:var(--font-display);font-size:20px;line-height:1.1;}.topbar .path{font-size:10px;color:var(--slate);margin-top:4px;}.topbar-right{display:flex;align-items:center;gap:8px;}.icon-btn{border:1px solid var(--line);background:#fff;border-radius:9px;width:36px;height:36px;position:relative;font-size:16px;}.icon-btn:hover{background:var(--orange-50);}.dot{position:absolute;right:5px;top:4px;width:6px;height:6px;background:var(--danger);border-radius:50%;}
+.content{padding:26px 28px 50px;max-width:1500px;}
+
+/* ---------- Common UI ---------- */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:22px;}.page-head h2{font-family:var(--font-display);font-size:22px;}.page-head p{font-size:12px;color:var(--slate);margin-top:5px;}.actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:9px 13px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:6px;}.btn:hover{background:var(--orange-50);border-color:var(--orange-100);}.btn.primary{background:var(--orange-600);color:#fff;border-color:var(--orange-600);}.btn.primary:hover{background:var(--orange-700);}.btn.success{background:var(--success);color:#fff;border-color:var(--success);}.btn.danger{background:#fff;color:var(--danger);border-color:#fecaca;}.btn.sm{padding:6px 9px;font-size:10px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}.card-head{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;}.card-head h3{font-family:var(--font-display);font-size:13px;}.card-body{padding:17px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px;}.kpi{padding:17px;border:1px solid var(--line);background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);}.kpi .k-label{font-size:10px;color:var(--slate);font-weight:700;text-transform:uppercase;letter-spacing:.6px;}.kpi .k-value{font-family:var(--font-display);font-size:25px;font-weight:800;margin-top:7px;}.kpi .k-meta{font-size:10px;color:var(--slate);margin-top:4px;}.kpi .k-icon{float:right;width:34px;height:34px;border-radius:9px;background:var(--orange-50);display:grid;place-items:center;font-size:17px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.table-wrap{overflow:auto;}.data-table{width:100%;border-collapse:collapse;font-size:11px;}.data-table th{text-align:left;padding:9px 10px;background:var(--orange-50);color:var(--slate);font-size:9px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}.data-table td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle;}.data-table tr:last-child td{border-bottom:0;}.data-table tr:hover td{background:#fffaf7;}
+.badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:20px;font-size:9px;font-weight:800;}.badge.green{background:var(--success-bg);color:var(--success);}.badge.red{background:var(--danger-bg);color:var(--danger);}.badge.orange{background:var(--orange-50);color:var(--orange-700);}.badge.blue{background:var(--info-bg);color:var(--info);}.badge.yellow{background:var(--warn-bg);color:#a16207;}.badge.gray{background:#f5f5f4;color:var(--slate);}
+.searchbar{display:flex;gap:8px;margin-bottom:13px;}.searchbar input{flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:11px;outline:none;}.searchbar input:focus{border-color:var(--orange-500);}.searchbar select{border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px;background:#fff;}
+.empty{text-align:center;padding:40px 15px;color:var(--slate);font-size:12px;}.empty .ei{font-size:32px;opacity:.4;margin-bottom:8px;}
+.progress{height:7px;background:var(--orange-50);border-radius:10px;overflow:hidden;}.progress>div{height:100%;background:var(--orange-500);border-radius:10px;}
+.alert{padding:11px 13px;border-radius:9px;font-size:11px;margin-bottom:12px;}.alert.info{background:var(--info-bg);color:#0369a1;border:1px solid #bae6fd;}.alert.warn{background:var(--warn-bg);color:#854d0e;border:1px solid #fde68a;}.alert.success{background:var(--success-bg);color:#166534;border:1px solid #bbf7d0;}.alert.danger{background:var(--danger-bg);color:#991b1b;border:1px solid #fecaca;}
+
+/* ---------- Modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(28,25,23,.45);backdrop-filter:blur(3px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}.modal-overlay.show{display:flex;}.modal{background:#fff;border-radius:16px;width:min(680px,100%);max-height:90vh;overflow:auto;box-shadow:0 25px 80px rgba(0,0,0,.2);}.modal.wide{width:min(1000px,100%);}.modal-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}.modal-head h3{font-family:var(--font-display);font-size:15px;}.modal-close{border:0;background:none;font-size:20px;color:var(--slate);}.modal-body{padding:20px;}.modal-foot{padding:13px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}.form-grid .full{grid-column:1/-1;}
+
+/* ---------- Dashboard ---------- */
+.welcome{background:linear-gradient(135deg,var(--orange-700),var(--orange-500));color:#fff;border-radius:var(--radius);padding:23px 25px;margin-bottom:18px;position:relative;overflow:hidden;}.welcome::after{content:'🎓';position:absolute;right:30px;bottom:-15px;font-size:100px;opacity:.15;}.welcome h2{font-family:var(--font-display);font-size:23px;}.welcome p{font-size:11px;opacity:.85;margin-top:5px;}
+.chart-box{height:240px;position:relative;}
+
+/* ---------- Attendance ---------- */
+.att-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;}.att-day{border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center;font-size:10px;}.att-day .num{font-family:var(--font-display);font-weight:800;font-size:15px;margin-top:3px;}.att-day.present{background:var(--success-bg);border-color:#bbf7d0;}.att-day.absent{background:var(--danger-bg);border-color:#fecaca;}.att-day.leave{background:var(--warn-bg);border-color:#fde68a;}
+.mark-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}.mark-btn{padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:10px;font-weight:700;}.mark-btn.sel-p{background:var(--success-bg);border-color:#86efac;color:var(--success);}.mark-btn.sel-a{background:var(--danger-bg);border-color:#fca5a5;color:var(--danger);}.mark-btn.sel-l{background:var(--warn-bg);border-color:#fde047;color:#a16207;}
+
+/* ---------- Calendar ---------- */
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}.cal-head{text-align:center;font-size:9px;font-weight:800;color:var(--slate);padding:5px;}.cal-cell{min-height:52px;border:1px solid var(--line);border-radius:6px;padding:5px;font-size:9px;}.cal-cell.today{border-color:var(--orange-500);background:var(--orange-50);}.cal-cell .cn{font-weight:800;}.cal-cell .ce{font-size:13px;margin-top:4px;}
+
+/* ---------- Responsive ---------- */
+@media(max-width:1050px){.sidebar{width:210px;}.main{margin-left:210px;}.kpi-grid{grid-template-columns:repeat(2,1fr);}.grid-3,.grid-4{grid-template-columns:1fr 1fr;}}
+@media(max-width:780px){.login-visual{display:none;}.login-panel{width:100%;}.sidebar{transform:translateX(-100%);}.main{margin-left:0;}.kpi-grid{grid-template-columns:1fr 1fr;}.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}.content{padding:18px 14px 40px;}.topbar{padding:0 14px;}.form-grid{grid-template-columns:1fr;}.form-grid .full{grid-column:auto;}.att-grid{grid-template-columns:repeat(4,1fr);}}
+</style>
 </head>
 <body>
-<script>
-(async function () {
-  try {
-    // Keep the original LSS application completely unchanged.
-    // We inject only the Supabase SDK + persistence bridge before loading it.
-    const response = await fetch('leads-school-system.html', { cache: 'no-store' });
-    if (!response.ok) throw new Error('Unable to load the original LSS application.');
-
-    let html = await response.text();
-    const supabaseSdk = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>';
-    const bridge = '<script src="supabase.js"><\\/script>';
-    const injection = supabaseSdk + bridge;
-
-    html = html.replace('</head>', injection + '</head>');
-    document.open();
-    document.write(html);
-    document.close();
-  } catch (error) {
-    document.body.innerHTML = '<div style="font-family:Arial;padding:40px;color:#b91c1c"><h2>LSS could not be loaded</h2><p>' +
-      String(error.message || error) + '</p><p>Please refresh the page.</p></div>';
-    console.error(error);
-  }
-})();
-</script>
+<div id="trail"></div>
+<div id="loginScreen">
+  <div class="login-visual">
+    <div class="login-brand"><div style="width:58px;height:58px;background:#fff;border-radius:12px;display:grid;place-items:center;font-size:34px;">🎓</div><div>Leads School<small>Zeenat Campus</small></div></div>
+    <div class="login-copy"><h2>School Management, made simple.</h2><p>One place for students, teachers, attendance, fees, diaries, tests, reports and communication — designed for the daily rhythm of Leads School System.</p></div>
+    <div class="login-foot">Leads School System • Zeenat Campus • Academic Management Platform</div>
+  </div>
+  <div class="login-panel"><div class="login-card">
+    <h1>Welcome back 👋</h1><div class="sub">Choose your role to continue</div>
+    <div class="role-grid" id="roleGrid"></div>
+    <div class="field"><label>Username</label><input id="loginUser" type="text" placeholder="e.g. admin"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="••••••••"></div>
+    <button class="login-btn" onclick="App.login()">Sign in to LSS</button>
+    <div class="demo-note"><strong>Demo access:</strong> Select any role and use username <strong>admin</strong> with password <strong>admin123</strong> for Admin, or <strong>teacher</strong> / <strong>teacher123</strong> for Teacher. Other roles accept <strong>demo</strong> / <strong>demo123</strong>.</div>
+  </div></div>
+</div>
+<div id="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div style="width:42px;height:42px;background:var(--orange-100);border-radius:9px;display:grid;place-items:center;font-size:24px;">🎓</div><div class="name">Leads School<small>Zeenat Campus</small></div></div>
+    <div id="navContainer"></div>
+    <div class="bottom-user"><div class="avatar" id="userAvatar">A</div><div class="who"><div class="n" id="userName">—</div><div class="r" id="userRole">—</div></div><button class="logout-btn" title="Log out" onclick="App.logout()">⏻</button></div>
+  </aside>
+  <div class="main"><div class="topbar"><div><h1 id="pageTitle">Dashboard</h1><div class="path" id="pagePath">Overview</div></div><div class="topbar-right"><button class="icon-btn" title="Birthday Reminders" onclick="App.go('birthdays')">🎂<span class="dot" id="bdayDot" style="display:none"></span></button><button class="icon-btn" title="WhatsApp Log" onclick="App.go('whatsapp')">💬<span class="dot" id="waDot" style="display:none"></span></button><button class="icon-btn" title="Notices" onclick="App.go('notices')">🔔<span class="dot" id="noticeDot" style="display:none"></span></button><div class="avatar" style="width:36px;height:36px;" id="topAvatar">A</div></div></div><div class="content" id="content"></div></div>
+</div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalBox"></div></div><div class="toast-wrap" id="toastWrap"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-storage.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
