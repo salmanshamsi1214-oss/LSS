@@ -7,7 +7,28 @@
 </head>
 <body>
 <script>
-window.location.replace('leads-school-system.html');
+(async function () {
+  try {
+    // Keep the original LSS application completely unchanged.
+    // We inject only the Supabase SDK + persistence bridge before loading it.
+    const response = await fetch('leads-school-system.html', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Unable to load the original LSS application.');
+
+    let html = await response.text();
+    const supabaseSdk = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>';
+    const bridge = '<script src="supabase.js"><\\/script>';
+    const injection = supabaseSdk + bridge;
+
+    html = html.replace('</head>', injection + '</head>');
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (error) {
+    document.body.innerHTML = '<div style="font-family:Arial;padding:40px;color:#b91c1c"><h2>LSS could not be loaded</h2><p>' +
+      String(error.message || error) + '</p><p>Please refresh the page.</p></div>';
+    console.error(error);
+  }
+})();
 </script>
 </body>
 </html>
