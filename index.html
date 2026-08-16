@@ -4,38 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leads School System — Zeenat Campus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="lss-loader" style="font-family:Arial,sans-serif;padding:40px;text-align:center">Loading Leads School System…</div>
-<script>
-(async function(){
-  try {
-    const response = await fetch('leads-school-system.html', {cache:'no-store'});
-    if (!response.ok) throw new Error('Unable to load LSS application');
-    const html = await response.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
 
-    // Keep the original application's external styles/fonts.
-    doc.head.querySelectorAll('link[rel="stylesheet"], link[rel="preconnect"], link[rel="preload"]').forEach(link => {
-      document.head.appendChild(link.cloneNode(true));
-    });
+<div id="trail"></div>
 
-    document.body.innerHTML = doc.body.innerHTML;
-
-    // Recreate scripts so the original application's inline JavaScript executes.
-    for (const oldScript of Array.from(doc.body.querySelectorAll('script'))) {
-      const script = document.createElement('script');
-      if (oldScript.src) script.src = oldScript.src;
-      else script.textContent = oldScript.textContent;
-      document.body.appendChild(script);
-    }
-  } catch (error) {
-    console.error(error);
-    document.body.innerHTML = '<div style="font-family:Arial;padding:40px"><h2>LSS loading error</h2><p>Please refresh the page. If the problem continues, check the Vercel deployment logs.</p></div>';
-  }
-})();
-</script>
-</body>
-</html>
+<!-- ================= LOGIN ================= -->
